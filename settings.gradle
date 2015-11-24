@@ -1,0 +1,4 @@
+rootProject.name = 'own-protocoll'
+include 'server'
+include 'client'
+
