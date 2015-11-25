@@ -1,4 +1,3 @@
-rootProject.name = 'own-protocoll'
+rootProject.name = 'file-transfer'
 include 'server'
 include 'client'
-
