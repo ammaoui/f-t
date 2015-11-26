@@ -1,7 +1,10 @@
 package com.rubengees.filetransfer.server.tcp;
 
 import com.rubengees.filetransfer.server.ConnectionStatus;
+import com.rubengees.filetransfer.server.FileReader;
 
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.HashMap;
 
 /**
@@ -56,9 +59,20 @@ public class FiletransferTcpServer extends AbstractTcpServer {
                             return;
                         }
 
-                        connectionMap.put(clientIP + "." + clientPort, new ConnectionStatus(fileName, chunkSize));
+                        status = new ConnectionStatus(fileName, chunkSize);
+                        try {
+                            String data = FileReader.readFile(Paths.get(directory + "/" + fileName));
 
-                        send(clientIP, clientPort, "OK");
+                            if (data.isEmpty()) {
+                                sendError(clientIP, clientPort, "The file is empty");
+                            } else {
+                                status.setData(data);
+                                connectionMap.put(clientIP + "." + clientPort, status);
+                                send(clientIP, clientPort, "OK");
+                            }
+                        } catch (IOException e) {
+                            sendError(clientIP, clientPort, "The file didn't exist or an other error occured.");
+                        }
                     } catch (NumberFormatException e) {
                         sendError(clientIP, clientPort,
                                 "The specified argument for chunk size was not a valid number.");
@@ -68,6 +82,21 @@ public class FiletransferTcpServer extends AbstractTcpServer {
                 }
             } else {
                 sendError(clientIP, clientPort, "Called init after initialization already performed.");
+            }
+        } else if (message.startsWith("GET")) {
+            if (status == null) {
+                sendError(clientIP, clientPort, "Init was not called.");
+            } else {
+                if (status.isEndReached()) {
+                    send(clientIP, clientPort, "FINISH");
+
+                    connectionMap.remove(clientIP + "." + clientPort);
+                    closeConnection(clientIP, clientPort);
+                } else {
+                    send(clientIP, clientPort, "DATA;" + status.getNextData());
+
+                    status.incrementDataPosition();
+                }
             }
         } else {
             sendError(clientIP, clientPort, "Not an allowed command.");
