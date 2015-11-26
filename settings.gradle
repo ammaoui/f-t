@@ -1,3 +1,5 @@
 rootProject.name = 'file-transfer'
 include 'server'
 include 'client'
+include 'core'
+

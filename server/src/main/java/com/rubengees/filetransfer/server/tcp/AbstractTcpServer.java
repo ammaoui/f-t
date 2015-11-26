@@ -1,5 +1,6 @@
 package com.rubengees.filetransfer.server.tcp;
 
+import com.rubengees.filetransfer.core.TcpConnection;
 import com.rubengees.filetransfer.server.Server;
 
 import java.io.IOException;
@@ -42,7 +43,7 @@ public abstract class AbstractTcpServer implements Server {
         TcpConnectionHandler.start();
     }
 
-    private void handleNewTcpConnection(Socket socket) {
+    private void handleNewTcpConnection(Socket socket) throws IOException {
         final TcpConnection connection = new TcpConnection(socket);
         Thread handler = new Thread() {
             @Override
@@ -52,7 +53,11 @@ public abstract class AbstractTcpServer implements Server {
                 processNewConnection(connection.getRemoteIP(), connection.getRemotePort());
 
                 while (!this.isInterrupted() && message != null) {
-                    message = connection.receive();
+                    try {
+                        message = connection.receive();
+                    } catch (IOException e) {
+                        message = null;
+                    }
 
                     if (message != null) {
                         processMessage(connection.getRemoteIP(), connection.getRemotePort(), message);

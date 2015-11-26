@@ -90,8 +90,7 @@ public class FiletransferTcpServer extends AbstractTcpServer {
                 if (status.isEndReached()) {
                     send(clientIP, clientPort, "FINISH");
 
-                    connectionMap.remove(clientIP + "." + clientPort);
-                    closeConnection(clientIP, clientPort);
+                    connectionMap.put(clientIP + "." + clientPort, null);
                 } else {
                     send(clientIP, clientPort, "DATA;" + status.getNextData());
 

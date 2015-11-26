@@ -1,4 +1,4 @@
-package com.rubengees.filetransfer.server.tcp;
+package com.rubengees.filetransfer.core;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,41 +13,29 @@ public class TcpConnection extends Thread {
     private String serverName;
     private int port;
 
-    public TcpConnection(String serverName, int port) {
+    public TcpConnection(String serverName, int port) throws IOException {
         this.serverName = serverName;
         this.port = port;
 
         connect();
     }
 
-    public TcpConnection(Socket clientSocket) {
+    public TcpConnection(Socket clientSocket) throws IOException {
         this.clientSocket = clientSocket;
         port = this.clientSocket.getLocalPort();
 
-        try {
-            out = new PrintWriter(this.clientSocket.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(this.clientSocket.getInputStream()));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        out = new PrintWriter(this.clientSocket.getOutputStream(), true);
+        in = new BufferedReader(new InputStreamReader(this.clientSocket.getInputStream()));
     }
 
-    private void connect() {
-        try {
-            clientSocket = new Socket(serverName, port);
-            out = new PrintWriter(clientSocket.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-        } catch (Exception e) {
-
-        }
+    private void connect() throws IOException {
+        clientSocket = new Socket(serverName, port);
+        out = new PrintWriter(clientSocket.getOutputStream(), true);
+        in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
     }
 
-    public String receive() {
-        try {
-            return in.readLine();
-        } catch (IOException e) {
-            return null;
-        }
+    public String receive() throws IOException {
+        return in.readLine();
     }
 
     public void send(String message) {
@@ -82,8 +70,8 @@ public class TcpConnection extends Thread {
     public void close() {
         try {
             clientSocket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException ignored) {
+
         }
     }
 }
