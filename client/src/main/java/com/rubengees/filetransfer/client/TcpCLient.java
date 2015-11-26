@@ -45,7 +45,7 @@ public class TcpClient implements Client {
                     if (current.startsWith("ERROR;")) {
                         return current.substring(6, current.length());
                     } else {
-                        return "Unknwon";
+                        return "Unknown";
                     }
                 }
             } while (!current.equals("FINISH"));
@@ -55,7 +55,7 @@ public class TcpClient implements Client {
         } else if (current.startsWith("ERROR;")) {
             return current.substring(6, current.length());
         } else {
-            return "Unknwon";
+            return "Unknown";
         }
 
         return null;
