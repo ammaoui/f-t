@@ -18,17 +18,21 @@ public class Main {
                 .desc("Make this server use the udp protocol.").build());
         Option port = Option.builder("p").hasArg().argName("port").longOpt("port")
                 .desc("make this server use the specified port.").build();
+        Option directory = Option.builder("d").hasArg().argName("directory").longOpt("directory")
+                .desc("Set the working directory..").build();
         Option help = Option.builder("h").hasArg(false).longOpt("help").desc("Print this message.").build();
 
         options.addOption(tcp);
         options.addOption(udp);
         options.addOption(port);
+        options.addOption(directory);
         options.addOption(help);
 
         try {
             CommandLine cmd = new DefaultParser().parse(options, args);
             boolean useTcp = true;
             int portToUse = 8999;
+            String directoryToUse = "";
 
             if (cmd.hasOption("h") || cmd.hasOption("help")) {
                 HelpFormatter formatter = new HelpFormatter();
@@ -37,6 +41,12 @@ public class Main {
             } else {
                 if (cmd.hasOption("u") || cmd.hasOption("udp")) {
                     useTcp = false;
+                }
+
+                if (cmd.hasOption("d")) {
+                    directoryToUse = cmd.getOptionValue("d");
+                } else if (cmd.hasOption("directory")) {
+                    directoryToUse = cmd.getOptionValue("directory");
                 }
 
                 try {
@@ -50,8 +60,7 @@ public class Main {
                             " the default port (8999) will be used.");
                 }
 
-                //TODO
-                FiletransferTcpServer server = new FiletransferTcpServer(portToUse, ".");
+                Server server = new FiletransferTcpServer(portToUse, directoryToUse);
 
             }
         } catch (ParseException e) {

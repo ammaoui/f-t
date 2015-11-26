@@ -14,7 +14,6 @@ import java.nio.file.Paths;
  */
 public class TcpClient implements Client {
 
-    public static final int CHUNK_SIZE = 1;
     private TcpConnection connection;
 
     @Override
@@ -23,35 +22,52 @@ public class TcpClient implements Client {
     }
 
     @Override
-    public String getFile(String fileName) throws IOException {
+    public void disconnect() {
+        connection.close();
+    }
+
+    @Override
+    public String getFile(String fileName, ProgressListener listener) throws IOException {
         String current;
 
         connection.send("INITX;" + CHUNK_SIZE + ";" + fileName);
         current = connection.receive();
 
         if (current.equals("OK")) {
-            BufferedWriter writer = Files.newBufferedWriter(Paths.get(fileName));
-            do {
-                connection.send("GET");
+            BufferedWriter writer = null;
 
-                current = connection.receive();
+            try {
+                writer = Files.newBufferedWriter(Paths.get(fileName));
+                do {
+                    connection.send("GET");
 
-                if (current.startsWith("DATA;")) {
-                    writer.write(current.substring(5, current.length()));
-                } else if (!current.equals("FINISH")) {
-                    writer.flush();
-                    writer.close();
+                    current = connection.receive();
 
-                    if (current.startsWith("ERROR;")) {
-                        return current.substring(6, current.length());
-                    } else {
-                        return "Unknown";
+                    if (current.startsWith("DATA;")) {
+                        writer.write(current.substring(5, current.length()));
+
+                        if (listener != null) {
+                            listener.onProgress();
+                        }
+                    } else if (!current.equals("FINISH")) {
+                        writer.flush();
+                        writer.close();
+
+                        if (current.startsWith("ERROR;")) {
+                            return current.substring(6, current.length());
+                        } else {
+                            return "Unknown";
+                        }
                     }
-                }
-            } while (!current.equals("FINISH"));
+                } while (!current.equals("FINISH"));
 
-            writer.flush();
-            writer.close();
+                writer.flush();
+                writer.close();
+            } finally {
+                if (writer != null) {
+                    writer.close();
+                }
+            }
         } else if (current.startsWith("ERROR;")) {
             return current.substring(6, current.length());
         } else {

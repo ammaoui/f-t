@@ -24,18 +24,36 @@ public class TcpConnection extends Thread {
         this.clientSocket = clientSocket;
         port = this.clientSocket.getLocalPort();
 
-        out = new PrintWriter(this.clientSocket.getOutputStream(), true);
-        in = new BufferedReader(new InputStreamReader(this.clientSocket.getInputStream()));
+        try {
+            out = new PrintWriter(this.clientSocket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(this.clientSocket.getInputStream()));
+        } catch (IOException e) {
+            close();
+
+            throw e;
+        }
     }
 
     private void connect() throws IOException {
-        clientSocket = new Socket(serverName, port);
-        out = new PrintWriter(clientSocket.getOutputStream(), true);
-        in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+        try {
+            clientSocket = new Socket(serverName, port);
+            out = new PrintWriter(clientSocket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+        } catch (IOException e) {
+            close();
+
+            throw e;
+        }
     }
 
     public String receive() throws IOException {
-        return in.readLine();
+        try {
+            return in.readLine();
+        } catch (IOException e) {
+            close();
+
+            throw e;
+        }
     }
 
     public void send(String message) {
@@ -69,7 +87,17 @@ public class TcpConnection extends Thread {
 
     public void close() {
         try {
-            clientSocket.close();
+            if (in != null) {
+                in.close();
+            }
+
+            if (out != null) {
+                out.close();
+            }
+
+            if (clientSocket != null) {
+                clientSocket.close();
+            }
         } catch (IOException ignored) {
 
         }

@@ -9,8 +9,12 @@ import java.io.IOException;
  */
 public interface Client {
 
+    int CHUNK_SIZE = 256;
+
     void connect(String ip, int port) throws IOException;
 
-    String getFile(String fileName) throws IOException;
+    void disconnect();
+
+    String getFile(String fileName, ProgressListener listener) throws IOException;
 
 }

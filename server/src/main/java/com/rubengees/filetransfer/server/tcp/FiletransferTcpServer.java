@@ -26,11 +26,15 @@ public class FiletransferTcpServer extends AbstractTcpServer {
     @Override
     protected void processNewConnection(String clientIP, int clientPort) {
         connectionMap.put(clientIP + "." + clientIP, null);
+
+        System.out.println("New connection from:" + clientIP + ":" + clientPort + ".");
     }
 
     @Override
     protected void processClosedConnection(String clientIP, int clientPort) {
         connectionMap.remove(clientIP + "." + clientPort);
+
+        System.out.println(clientIP + ":" + clientPort + " disconnected.");
     }
 
     @Override

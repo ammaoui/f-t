@@ -13,7 +13,62 @@ import java.io.InputStreamReader;
  */
 public class Main {
 
-    public static void main(String[] args) throws IOException {
+    private static Client client;
+
+    public static void main(String[] args) {
+        boolean success = false;
+
+        try {
+            setupClient(args);
+        } catch (ParseException ignored) {
+            System.exit(-1);
+        }
+
+        while (true) {
+            try {
+                connect();
+
+                success = true;
+            } catch (IOException e) {
+                System.out.println("An error occurred while connecting: " + e.getMessage());
+
+                try {
+                    if (readNextCommand(new Pair<>("e", "exit"), new Pair<>("r", "retry")).equalsIgnoreCase("e")) {
+                        System.exit(0);
+                    }
+                } catch (IOException ignored) {
+
+                }
+            }
+
+            if (success) {
+                while (true) {
+                    try {
+                        download();
+                    } catch (IOException e) {
+                        System.out.println("An error occurred while downloading: " + e.getMessage());
+                    }
+
+                    try {
+                        String nextCommand = readNextCommand(new Pair<>("e", "exit"), new Pair<>("d", "disconnect"),
+                                new Pair<>("n", "download another file"));
+
+                        if (nextCommand.equalsIgnoreCase("e")) {
+                            System.exit(0);
+                        } else if (nextCommand.equalsIgnoreCase("d")) {
+                            client.disconnect();
+
+                            break;
+                        }
+                    } catch (IOException ignored) {
+
+                    }
+                }
+            }
+        }
+    }
+
+    private static void setupClient(String[] args) throws ParseException {
         Options options = new Options();
         Option tcp = Option.builder("t").hasArg(false).longOpt("tcp")
                 .desc("Make this client use the tcp protocol. (default)").build();
@@ -28,7 +83,6 @@ public class Main {
         try {
             CommandLine cmd = new DefaultParser().parse(options, args);
             boolean useTcp = true;
-            int portToUse = 8999;
 
             if (cmd.hasOption("h") || cmd.hasOption("help")) {
                 HelpFormatter formatter = new HelpFormatter();
@@ -38,20 +92,33 @@ public class Main {
                 if (cmd.hasOption("u") || cmd.hasOption("udp")) {
                     useTcp = false;
                 }
+            }
 
-                Client client;
-
-                if (useTcp) {
-                    client = new TcpClient();
-                } else {
-                    client = null;
-                }
-
-                client.connect(readHost(), readPort());
-                client.getFile(readFileName());
+            if (useTcp) {
+                client = new TcpClient();
+            } else {
+                client = null;
             }
         } catch (ParseException e) {
             System.out.println("An error occurred while parsing the command line arguments. See the help. (-h)");
+
+            throw e;
+        }
+    }
+
+    private static void connect() throws IOException {
+        client.connect(readHost(), readPort());
+    }
+
+    private static void download() throws IOException {
+        String error = client.getFile(readFileName(), () -> {
+            System.out.print(".");
+        });
+
+        System.out.println();
+
+        if (error != null) {
+            System.out.println("An error occurred while downloading the file: " + error);
         }
     }
 
@@ -83,10 +150,10 @@ public class Main {
                 if (portAsInt > 0) {
                     return portAsInt;
                 } else {
-                    System.out.println("The post has to be a number larger than 0.");
+                    System.out.println("The port has to be a number larger than 0.");
                 }
             } catch (NumberFormatException e) {
-                System.out.println("The post has to be a number larger than 0.");
+                System.out.println("The port has to be a number larger than 0.");
             }
         }
     }
@@ -106,4 +173,29 @@ public class Main {
         }
     }
 
+    @SafeVarargs
+    private static String readNextCommand(Pair<String, String>... commands) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+
+        while (true) {
+            System.out.println("Next command?");
+            for (Pair<String, String> command : commands) {
+                System.out.println(command.getFirst() + " - " + command.getSecond());
+            }
+
+            String nextCommand = reader.readLine();
+
+            if (nextCommand.isEmpty()) {
+                System.out.println("The command cannot be empty.");
+            } else {
+                for (Pair<String, String> command : commands) {
+                    if (command.getFirst().equalsIgnoreCase(nextCommand)) {
+                        return nextCommand;
+                    }
+                }
+
+                System.out.println("The command must be one of the available ones.");
+            }
+        }
+    }
 }
