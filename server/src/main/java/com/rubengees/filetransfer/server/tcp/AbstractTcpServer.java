@@ -1,4 +1,6 @@
-package com.rubengees.filetransfer.server;
+package com.rubengees.filetransfer.server.tcp;
+
+import com.rubengees.filetransfer.server.Server;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -85,7 +87,7 @@ public abstract class AbstractTcpServer implements Server {
         }
     }
 
-    private void closeConnection(String clientIP, int clientPort) {
+    protected void closeConnection(String clientIP, int clientPort) {
         for (int i = 0; i < connectionList.size(); i++) {
             TcpConnection connection = connectionList.get(i);
 

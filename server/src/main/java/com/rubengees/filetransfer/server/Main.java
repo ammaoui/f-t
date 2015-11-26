@@ -1,5 +1,6 @@
 package com.rubengees.filetransfer.server;
 
+import com.rubengees.filetransfer.server.tcp.FiletransferTcpServer;
 import org.apache.commons.cli.*;
 
 /**
@@ -50,6 +51,7 @@ public class Main {
                 }
 
                 //TODO
+                FiletransferTcpServer server = new FiletransferTcpServer(portToUse, ".");
 
             }
         } catch (ParseException e) {

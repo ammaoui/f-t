@@ -1,4 +1,4 @@
-package com.rubengees.filetransfer.server;
+package com.rubengees.filetransfer.server.tcp;
 
 import java.io.BufferedReader;
 import java.io.IOException;
