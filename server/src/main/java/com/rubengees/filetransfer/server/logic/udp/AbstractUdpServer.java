@@ -6,7 +6,6 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.util.Arrays;
 
 /**
  * Todo: Describe class
@@ -34,12 +33,14 @@ public abstract class AbstractUdpServer implements Closeable {
         messageHandler = new Thread() {
             @Override
             public void run() {
-                try {
-                    serverSocket.receive(in);
+                while (!this.isInterrupted()) {
+                    try {
+                        serverSocket.receive(in);
 
-                    processMessage(in.getAddress().getHostAddress(), in.getPort(), Arrays.toString(in.getData()));
-                } catch (IOException ignored) {
+                        processMessage(in.getAddress().getHostAddress(), in.getPort(), new String(in.getData()).trim());
+                    } catch (IOException ignored) {
 
+                    }
                 }
             }
         };

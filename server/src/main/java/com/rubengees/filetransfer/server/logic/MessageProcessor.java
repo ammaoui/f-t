@@ -3,6 +3,7 @@ package com.rubengees.filetransfer.server.logic;
 import com.rubengees.filetransfer.server.logic.util.FileReader;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Paths;
 
 import static com.rubengees.filetransfer.core.Protocol.*;
@@ -45,7 +46,7 @@ public class MessageProcessor {
 
                                 return OK;
                             }
-                        } catch (IOException e) {
+                        } catch (IOException | UncheckedIOException e) {
                             return ERROR + "The file didn't exist or an other error occurred.";
                         }
                     } catch (NumberFormatException e) {

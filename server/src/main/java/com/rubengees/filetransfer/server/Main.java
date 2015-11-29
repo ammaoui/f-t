@@ -5,7 +5,6 @@ import com.rubengees.filetransfer.server.logic.udp.FiletransferUdpServer;
 import org.apache.commons.cli.*;
 
 import java.io.Closeable;
-import java.io.IOException;
 
 /**
  * TODO: Describe class
@@ -70,12 +69,6 @@ public class Main {
                     server = new FiletransferTcpServer(portToUse, directoryToUse);
                 } else {
                     server = new FiletransferUdpServer(portToUse, directoryToUse);
-                }
-
-                try {
-                    server.close();
-                } catch (IOException ignored) {
-
                 }
 
             }

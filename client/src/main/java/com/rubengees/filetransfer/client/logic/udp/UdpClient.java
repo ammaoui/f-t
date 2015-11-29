@@ -1,41 +1,50 @@
-package com.rubengees.filetransfer.client.logic.tcp;
+package com.rubengees.filetransfer.client.logic.udp;
 
 import com.rubengees.filetransfer.client.logic.Client;
 import com.rubengees.filetransfer.client.logic.ProgressListener;
-import com.rubengees.filetransfer.core.TcpConnection;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import static com.rubengees.filetransfer.core.Protocol.*;
 
 /**
- * TODO: Describe class
+ * Todo: Describe class
  *
  * @author Ruben Gees
  */
-public class TcpClient implements Client {
+public class UdpClient implements Client {
 
-    private TcpConnection connection;
+    private DatagramSocket socket;
+    private DatagramPacket out;
 
     @Override
     public void connect(String ip, int port) throws IOException {
-        connection = new TcpConnection(ip, port);
+        socket = new DatagramSocket();
+        byte[] buffer = new byte[128];
+        out = new DatagramPacket(buffer, 128, InetAddress.getByName(ip), port);
     }
 
     @Override
     public void disconnect() {
-        connection.close();
+        if (socket != null) {
+            socket.close();
+        }
+
+        out = null;
     }
 
     @Override
     public String getFile(String fileName, ProgressListener listener) throws IOException {
         String current;
 
-        connection.send(INIT + CHUNK_SIZE + ";" + fileName);
-        current = connection.receive();
+        send(INIT + CHUNK_SIZE + ";" + fileName);
+        current = receive(128);
 
         if (current.equals(OK)) {
             BufferedWriter writer = null;
@@ -43,9 +52,8 @@ public class TcpClient implements Client {
             try {
                 writer = Files.newBufferedWriter(Paths.get(fileName));
                 do {
-                    connection.send(GET);
-
-                    current = connection.receive();
+                    send(GET);
+                    current = receive(CHUNK_SIZE);
 
                     if (current.startsWith(DATA)) {
                         writer.write(current.substring(5, current.length()));
@@ -81,4 +89,15 @@ public class TcpClient implements Client {
         return null;
     }
 
+    private void send(String message) throws IOException {
+        out.setData(message.getBytes());
+        socket.send(out);
+    }
+
+    private String receive(int length) throws IOException {
+        DatagramPacket in = new DatagramPacket(new byte[length], length);
+        socket.receive(in);
+
+        return new String(in.getData()).trim();
+    }
 }

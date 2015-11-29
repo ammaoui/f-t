@@ -2,6 +2,7 @@ package com.rubengees.filetransfer.client;
 
 import com.rubengees.filetransfer.client.logic.Client;
 import com.rubengees.filetransfer.client.logic.tcp.TcpClient;
+import com.rubengees.filetransfer.client.logic.udp.UdpClient;
 import com.rubengees.filetransfer.client.logic.util.Pair;
 import com.rubengees.filetransfer.client.logic.util.Validator;
 import org.apache.commons.cli.*;
@@ -103,7 +104,7 @@ public class Main {
             if (useTcp) {
                 client = new TcpClient();
             } else {
-                client = null;
+                client = new UdpClient();
             }
         } catch (ParseException e) {
             System.out.println("An error occurred while parsing the command line arguments. See the help. (-h)");
