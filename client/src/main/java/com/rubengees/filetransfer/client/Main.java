@@ -1,5 +1,9 @@
 package com.rubengees.filetransfer.client;
 
+import com.rubengees.filetransfer.client.logic.Client;
+import com.rubengees.filetransfer.client.logic.tcp.TcpClient;
+import com.rubengees.filetransfer.client.logic.util.Pair;
+import com.rubengees.filetransfer.client.logic.util.Validator;
 import org.apache.commons.cli.*;
 
 import java.io.BufferedReader;
@@ -47,6 +51,8 @@ public class Main {
                         download();
                     } catch (IOException e) {
                         System.out.println("An error occurred while downloading: " + e.getMessage());
+
+                        break;
                     }
 
                     try {

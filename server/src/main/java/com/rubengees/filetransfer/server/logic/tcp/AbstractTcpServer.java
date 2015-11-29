@@ -1,15 +1,15 @@
-package com.rubengees.filetransfer.server.tcp;
+package com.rubengees.filetransfer.server.logic.tcp;
 
 import com.rubengees.filetransfer.core.TcpConnection;
-import com.rubengees.filetransfer.server.Server;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class AbstractTcpServer implements Server {
+public abstract class AbstractTcpServer implements Closeable {
 
     private ServerSocket serverSocket;
     private Thread TcpConnectionHandler;
@@ -19,11 +19,11 @@ public abstract class AbstractTcpServer implements Server {
     public AbstractTcpServer(int port) {
         try {
             serverSocket = new ServerSocket(port);
-        } catch (Exception e) {
-            System.out.println("ERROR: Can't open server socket - " + e.getMessage());
-        }
 
-        createTcpConnectionHandler();
+            createTcpConnectionHandler();
+        } catch (Exception ignored) {
+
+        }
     }
 
     private void createTcpConnectionHandler() {
@@ -33,8 +33,8 @@ public abstract class AbstractTcpServer implements Server {
                 while (!this.isInterrupted()) {
                     try {
                         handleNewTcpConnection(serverSocket.accept());
-                    } catch (IOException e) {
-                        System.out.println("ERROR: Can't connect - " + e.getMessage());
+                    } catch (IOException ignored) {
+
                     }
                 }
             }
@@ -73,7 +73,7 @@ public abstract class AbstractTcpServer implements Server {
         handlerList.add(handler);
     }
 
-    protected final void send(String clientIP, int clientPort, String message) {
+    protected final void send(String clientIP, int clientPort, String message) throws IOException {
         for (TcpConnection connection : connectionList) {
             if (connection.getRemoteIP().equals(clientIP)
                     && connection.getRemotePort() == clientPort) {
@@ -82,17 +82,15 @@ public abstract class AbstractTcpServer implements Server {
                 return;
             }
         }
-
-        System.err.println("ERROR: Client " + clientIP + " not found!");
     }
 
-    protected final void sendToAll(String message) {
+    protected final void sendToAll(String message) throws IOException {
         for (TcpConnection connection : connectionList) {
             connection.send(message);
         }
     }
 
-    protected void closeConnection(String clientIP, int clientPort) {
+    protected final void closeConnection(String clientIP, int clientPort) {
         for (int i = 0; i < connectionList.size(); i++) {
             TcpConnection connection = connectionList.get(i);
 
@@ -115,8 +113,8 @@ public abstract class AbstractTcpServer implements Server {
         try {
             TcpConnectionHandler.interrupt();
             serverSocket.close();
-        } catch (Exception e) {
-            System.out.println("ERROR: Can't close server socket - " + e.getMessage());
+        } catch (IOException ignored) {
+
         }
 
         for (int i = 0; i < connectionList.size(); i++) {

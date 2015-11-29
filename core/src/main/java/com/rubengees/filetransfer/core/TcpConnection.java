@@ -56,7 +56,7 @@ public class TcpConnection extends Thread {
         }
     }
 
-    public void send(String message) {
+    public void send(String message) throws IOException {
         out.println(message);
         out.flush();
     }

@@ -1,4 +1,4 @@
-package com.rubengees.filetransfer.client;
+package com.rubengees.filetransfer.client.logic.util;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

@@ -1,7 +1,11 @@
 package com.rubengees.filetransfer.server;
 
-import com.rubengees.filetransfer.server.tcp.FiletransferTcpServer;
+import com.rubengees.filetransfer.server.logic.tcp.FiletransferTcpServer;
+import com.rubengees.filetransfer.server.logic.udp.FiletransferUdpServer;
 import org.apache.commons.cli.*;
+
+import java.io.Closeable;
+import java.io.IOException;
 
 /**
  * TODO: Describe class
@@ -60,7 +64,19 @@ public class Main {
                             " the default port (8999) will be used.");
                 }
 
-                Server server = new FiletransferTcpServer(portToUse, directoryToUse);
+                Closeable server;
+
+                if (useTcp) {
+                    server = new FiletransferTcpServer(portToUse, directoryToUse);
+                } else {
+                    server = new FiletransferUdpServer(portToUse, directoryToUse);
+                }
+
+                try {
+                    server.close();
+                } catch (IOException ignored) {
+
+                }
 
             }
         } catch (ParseException e) {

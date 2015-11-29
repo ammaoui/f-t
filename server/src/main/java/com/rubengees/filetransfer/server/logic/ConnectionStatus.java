@@ -1,4 +1,4 @@
-package com.rubengees.filetransfer.server;
+package com.rubengees.filetransfer.server.logic;
 
 /**
  * Todo: Describe class

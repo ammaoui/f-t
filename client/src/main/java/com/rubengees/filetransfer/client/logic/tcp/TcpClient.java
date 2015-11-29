@@ -1,5 +1,7 @@
-package com.rubengees.filetransfer.client;
+package com.rubengees.filetransfer.client.logic.tcp;
 
+import com.rubengees.filetransfer.client.logic.Client;
+import com.rubengees.filetransfer.client.logic.ProgressListener;
 import com.rubengees.filetransfer.core.TcpConnection;
 
 import java.io.BufferedWriter;

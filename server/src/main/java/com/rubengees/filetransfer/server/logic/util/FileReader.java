@@ -1,4 +1,4 @@
-package com.rubengees.filetransfer.server;
+package com.rubengees.filetransfer.server.logic.util;
 
 import java.io.IOException;
 import java.nio.file.Files;
